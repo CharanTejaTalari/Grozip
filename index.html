@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grozip - Premium Grocery Shopping</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/fuse.js@6.6.2/dist/fuse.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #map { height: 100%; }
+    .leaflet-container { border-radius: 0.75rem; }
+    .autocomplete-suggestions {
+      position: absolute;
+      background: white;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border-radius: 0.5rem;
+      z-index: 1000;
+    }
+    .autocomplete-suggestion {
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .autocomplete-suggestion:hover {
+      background-color: #f3f4f6;
+    }
+    .dark .autocomplete-suggestions {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+    .dark .autocomplete-suggestion:hover {
+      background-color: #374151;
+    }
+    .animate-slide-in {
+      animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .dark { background: #111827; color: #f9fafb; }
+    .dark .bg-white { background: #1f2937; }
+    .dark .text-gray-600 { color: #d1d5db; }
+    .dark .bg-gray-100 { background: #374151; }
+    .dark .text-green-600 { color: #10b981; }
+    .dark .bg-green-600 { background: #059669; }
+    .dark .bg-green-700 { background: #047857; }
+    .dark .text-gray-800 { color: #f3f4f6; }
+  </style>
+</head>
+<body className="transition-colors duration-300">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // Mock shop and item data
+    const shops = [
+      { name: 'Fresh Mart', address: '123 Main Street, Hyderabad', lat: 17.3850, lng: 78.4867, contact: '9876543210', hours: '9 AM - 9 PM', category: 'Supermarket', rating: 4.5, payment: 'Cash, Card, UPI', delivery: 'Yes (within 5 km)', established: 2012, staff: 25, tags: ['Organic', 'Discounted Items', 'Loyalty Program'] },
+      { name: 'Daily Needs', address: '456 Subhash Nagar, Vizag', lat: 17.6868, lng: 83.2185, contact: '9001234567', hours: '8 AM - 10 PM', category: 'Grocery Store', rating: 4.3, payment: 'Card, UPI', delivery: 'No', established: 2015, staff: 18, tags: ['Daily Essentials', 'Cold Storage'] },
+      { name: 'Super Bazaar', address: '789 Market Road, Vijayawada', lat: 16.5062, lng: 80.6480, contact: '8899776655', hours: '10 AM - 8 PM', category: 'Hypermarket', rating: 4.7, payment: 'All modes', delivery: 'Yes (within 10 km)', established: 2010, staff: 40, tags: ['Groceries', 'Electronics', 'Household Items'] }
+    ];
+
+    const items = {
+      'Fresh Mart': [
+        { name: 'Fresh Apples', category: 'Fruits', price: 150, priceDisplay: '₹150/kg', stock: '50 kg', tags: ['Organic', 'Fresh'] },
+        { name: 'Whole Wheat Bread', category: 'Bakery', price: 40, priceDisplay: '₹40/loaf', stock: '100 loaves', tags: ['Healthy', 'Fresh'] },
+        { name: 'Milk', category: 'Dairy', price: 60, priceDisplay: '₹60/liter', stock: '200 liters', tags: ['Full Cream', 'Pasteurized'] },
+        { name: 'Potatoes', category: 'Vegetables', price: 30, priceDisplay: '₹30/kg', stock: '300 kg', tags: ['Fresh', 'Local'] },
+        { name: 'Chips', category: 'Snacks', price: 20, priceDisplay: '₹20/pack', stock: '500 packs', tags: ['Spicy', 'Crunchy'] }
+      ],
+      'Daily Needs': [
+        { name: 'Fresh Apples', category: 'Fruits', price: 140, priceDisplay: '₹140/kg', stock: '40 kg', tags: ['Organic'] },
+        { name: 'Milk', category: 'Dairy', price: 55, priceDisplay: '₹55/liter', stock: '150 liters', tags: ['Pasteurized'] }
+      ],
+      'Super Bazaar': [
+        { name: 'Chips', category: 'Snacks', price: 18, priceDisplay: '₹18/pack', stock: '600 packs', tags: ['Spicy', 'Crunchy'] },
+        { name: 'Potatoes', category: 'Vegetables', price: 25, priceDisplay: '₹25/kg', stock: '400 kg', tags: ['Fresh', 'Local'] }
+      ]
+    };
+
+    // Authentication Context
+    const AuthContext = React.createContext();
+
+    // Header Component
+    const Header = ({ setPage, toggleTheme, isDark }) => {
+      const { user, logout } = React.useContext(AuthContext);
+      return (
+        <header className="bg-white dark:bg-gray-800 shadow-md p-4 sticky top-0 z-50">
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-8">
+              <div className="text-2xl font-bold text-green-600 cursor-pointer" onClick={() => setPage('home')} role="button" aria-label="Go to homepage">Grozip</div>
+              <nav className="flex gap-6">
+                <div className="relative group">
+                  <button className="text-green-600 dark:text-green-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded" aria-label="Categories menu">Categories</button>
+                  <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-2">
+                    {['Vegetables', 'Fruits', 'Snacks', 'Dairy'].map(category => (
+                      <a key={category} href="#" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label={`View ${category}`}>{category}</a>
+                    ))}
+                  </div>
+                </div>
+                <div className="relative group">
+                  <button className="text-green-600 dark:text-green-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded" aria-label="Offers menu">Offers</button>
+                  <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-2">
+                    {['Today’s Deals', 'Weekend Sale', 'Combo Packs'].map(offer => (
+                      <a key={offer} href="#" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label={`View ${offer}`}>{offer}</a>
+                    ))}
+                  </div>
+                </div>
+              </nav>
+            </div>
+            <div className="flex items-center gap-6 text-green-600 dark:text-green-400 font-bold">
+              <span aria-label="Contact number">📞 1800-123-456</span>
+              <span className="text-2xl cursor-pointer" onClick={() => setPage('cart')} role="button" aria-label="View cart">🛒</span>
+              <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle dark mode">🌙</button>
+              {user ? (
+                <div className="relative group">
+                  <span className="cursor-pointer" aria-label={`User menu for ${user.name}`}>{user.name}</span>
+                  <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-2">
+                    <button onClick={logout} className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Logout">Logout</button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setPage('login')} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" aria-label="Login">Login</button>
+              )}
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    // Login Component
+    const Login = ({ setPage, login }) => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+
+      const handleLogin = () => {
+        if (email && password) {
+          login({ name: email.split('@')[0], email });
+          setPage('home');
+        } else {
+          alert('Please fill in all fields.');
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 animate-slide-in">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-center mb-6">Login to Grozip</h2>
+            <div className="flex flex-col gap-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                required
+                aria-label="Email address"
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                required
+                aria-label="Password"
+              />
+              <button onClick={handleLogin} className="px-5 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700" aria-label="Login">Login</button>
+            </div>
+            <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+              Don’t have an account? <span className="text-green-600 dark:text-green-400 cursor-pointer" onClick={() => setPage('signup')} role="button" aria-label="Go to signup">Sign Up</span>
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Signup Component
+    const Signup = ({ setPage, login }) => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+
+      const handleSignup = () => {
+        if (email && password) {
+          login({ name: email.split('@')[0], email });
+          setPage('home');
+        } else {
+          alert('Please fill in all fields.');
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 animate-slide-in">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-center mb-6">Sign Up for Grozip</h2>
+            <div className="flex flex-col gap-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                required
+                aria-label="Email address"
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                required
+                aria-label="Password"
+              />
+              <button onClick={handleSignup} className="px-5 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700" aria-label="Sign up">Sign Up</button>
+            </div>
+            <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+              Already have an account? <span className="text-green-600 dark:text-green-400 cursor-pointer" onClick={() => setPage('login')} role="button" aria-label="Go to login">Login</span>
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Home Component
+    const Home = ({ setPage }) => {
+      const [search, setSearch] = useState('');
+      const [suggestions, setSuggestions] = useState([]);
+
+      const fuse = new Fuse([...shops, ...Object.values(items).flat()], {
+        keys: ['name', 'address', 'tags', 'category'],
+        threshold: 0.3,
+        includeScore: true
+      });
+
+      const handleSearch = () => {
+        if (search.trim()) {
+          setPage('store_list');
+        }
+      };
+
+      const handleInputChange = (e) => {
+        const value = e.target.value;
+        setSearch(value);
+        if (value) {
+          const results = fuse.search(value).map(result => result.item.name);
+          setSuggestions(results.slice(0, 5));
+        } else {
+          setSuggestions([]);
+        }
+      };
+
+      const selectSuggestion = (suggestion) => {
+        setSearch(suggestion);
+        setSuggestions([]);
+        setPage('store_list');
+      };
+
+      return (
+        <div className="min-h-screen bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1610348725531-843dff563e2c')" }}>
+          <div className="bg-white dark:bg-gray-800 bg-opacity-95 dark:bg-opacity-95 p-8 rounded-xl shadow-2xl max-w-2xl w-full animate-slide-in">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-center mb-6">Find Your Nearest Grocery Store</h2>
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={handleInputChange}
+                  placeholder="Search for shops or products (e.g., Fresh Mart, Apples)"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                  aria-label="Search shops or products"
+                />
+                {suggestions.length > 0 && (
+                  <div className="autocomplete-suggestions">
+                    {suggestions.map((suggestion, index) => (
+                      <div key={index} className="autocomplete-suggestion" onClick={() => selectSuggestion(suggestion)} role="button" aria-label={`Select ${suggestion}`}>
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button onClick={handleSearch} className="px-5 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700" aria-label="Search">Search</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // StoreList Component
+    const StoreList = ({ setPage, setSelectedStore, search }) => {
+      const [map, setMap] = useState(null);
+
+      useEffect(() => {
+        const mapInstance = L.map('map').setView([17.3850, 78.4867], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mapInstance);
+
+        const markers = L.markerClusterGroup();
+        shops.forEach(shop => {
+          const marker = L.marker([shop.lat, shop.lng])
+            .bindPopup(`<b>${shop.name}</b><br>${shop.address}<br><button class="shop-now-button px-3 py-1 bg-green-600 text-white rounded" data-shop="${shop.name}">Shop Now</button>`);
+          markers.addLayer(marker);
+        });
+        mapInstance.addLayer(markers);
+        setMap(mapInstance);
+
+        const handleShopNowClick = (e) => {
+          if (e.target.classList.contains('shop-now-button')) {
+            const shopName = e.target.getAttribute('data-shop');
+            setSelectedStore(shopName);
+            setPage('groceries');
+          }
+        };
+        mapInstance.getContainer().addEventListener('click', handleShopNowClick);
+
+        return () => {
+          mapInstance.getContainer().removeEventListener('click', handleShopNowClick);
+          mapInstance.remove();
+        };
+      }, [setSelectedStore, setPage]);
+
+      const filteredShops = shops.filter(shop =>
+        shop.name.toLowerCase().includes(search.toLowerCase()) ||
+        shop.address.toLowerCase().includes(search.toLowerCase()) ||
+        shop.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+      );
+
+      return (
+        <div>
+          <div className="bg-white dark:bg-gray-800 shadow-md p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 text-center mb-4">Search Again</h3>
+            <div className="flex justify-center gap-3">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setPage('store_list', e.target.value)}
+                placeholder="Enter shop or supermarket name"
+                className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg max-w-md w-full dark:bg-gray-700 dark:text-gray-200"
+                aria-label="Search shops"
+              />
+              <button onClick={() => setPage('store_list', search)} className="px-5 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700" aria-label="Search">Search</button>
+            </div>
+          </div>
+          <div className="container mx-auto flex gap-5 p-8">
+            <div className="flex-3">
+              {filteredShops.map(shop => (
+                <div key={shop.name} className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-4 shadow-md animate-slide-in">
+                  <h3 className="text-xl font-bold text-green-600 dark:text-green-400">{shop.name}</h3>
+                  <div className="grid grid-cols-2 gap-3 text-gray-600 dark:text-gray-400">
+                    <p>📍 Address: {shop.address}</p>
+                    <p>📞 Contact: {shop.contact}</p>
+                    <p>⏰ Open Hours: {shop.hours}</p>
+                    <p>🛒 Category: {shop.category}</p>
+                    <p>⭐ Rating: {shop.rating}/5</p>
+                    <p>💳 Payment: {shop.payment}</p>
+                    <p>🚚 Delivery: {shop.delivery}</p>
+                    <p>📅 Established: {shop.established}</p>
+                    <p>👥 Staff: {shop.staff}</p>
+                    <p>🏷️ Tags: {shop.tags.join(', ')}</p>
+                  </div>
+                  <button
+                    className="mt-4 px-5 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"
+                    onClick={() => { setSelectedStore(shop.name); setPage('groceries'); }}
+                    aria-label={`Shop at ${shop.name}`}
+                  >
+                    Shop Now
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 sticky top-0 h-screen">
+              <div id="map" className="h-full"></div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Groceries Component
+    const Groceries = ({ setPage, selectedStore }) => {
+      const [cart, setCart] = useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('cart')) || [];
+        } catch {
+          return [];
+        }
+      });
+      const [filter, setFilter] = useState('');
+
+      const addToCart = (itemName) => {
+        if (!cart.includes(itemName)) {
+          const newCart = [...cart, itemName];
+          setCart(newCart);
+          localStorage.setItem('cart', JSON.stringify(newCart));
+        }
+      };
+
+      const filteredItems = (items[selectedStore] || []).filter(item =>
+        item.name.toLowerCase().includes(filter.toLowerCase()) ||
+        item.category.toLowerCase().includes(filter.toLowerCase()) ||
+        item.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase()))
+      );
+
+      return (
+        <div>
+          <div className="bg-white dark:bg-gray-800 shadow-md p-6 text-center">
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">{selectedStore} - Groceries</h2>
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter by name, category, or tags"
+              className="mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-lg max-w-md w-full dark:bg-gray-700 dark:text-gray-200"
+              aria-label="Filter groceries"
+            />
+          </div>
+          <div className="container mx-auto p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map(item => (
+              <div key={item.name} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md animate-slide-in">
+                <h3 className="text-xl font-bold text-green-600 dark:text-green-400">{item.name}</h3>
+                <p className="text-gray-600 dark:text-gray-400">🛒 Category: {item.category}</p>
+                <p className="text-gray-600 dark:text-gray-400">💰 Price: {item.priceDisplay}</p>
+                <p className="text-gray-600 dark:text-gray-400">📦 Stock: {item.stock}</p>
+                <p className="text-gray-600 dark:text-gray-400">🏷️ Tags: {item.tags.join(', ')}</p>
+                <button
+                  className={`mt-4 w-full py-2 rounded-lg font-bold text-white ${cart.includes(item.name) ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'}`}
+                  onClick={() => addToCart(item.name)}
+                  disabled={cart.includes(item.name)}
+                  aria-label={cart.includes(item.name) ? `${item.name} added to cart` : `Add ${item.name} to cart`}
+                >
+                  {cart.includes(item.name) ? 'Added' : 'Add to Cart'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Cart Component
+    const Cart = ({ setPage }) => {
+      const [cart, setCart] = useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('cart')) || [];
+        } catch {
+          return [];
+        }
+      });
+      const [quantities, setQuantities] = useState({});
+
+      const updateQuantity = (item, delta) => {
+        setQuantities(prev => ({
+          ...prev,
+          [item]: Math.max(1, (prev[item] || 1) + delta)
+        }));
+      };
+
+      const removeFromCart = (item) => {
+        const newCart = cart.filter(i => i !== item);
+        setCart(newCart);
+        localStorage.setItem('cart', JSON.stringify(newCart));
+        setQuantities(prev => {
+          const newQuantities = { ...prev };
+          delete newQuantities[item];
+          return newQuantities;
+        });
+      };
+
+      const total = cart.reduce((sum, item) => {
+        const itemInfo = Object.values(items).flat().find(i => i.name === item) || { price: 0 };
+        return sum + itemInfo.price * (quantities[item] || 1);
+      }, 0);
+
+      return (
+        <div>
+          <div className="bg-white dark:bg-gray-800 shadow-md p-6 text-center">
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">Your Cart</h2>
+          </div>
+          <div className="container mx-auto flex gap-5 p-8">
+            <div className="flex-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cart.length === 0 ? (
+                <div className="col-span-full text-center text-gray-600 dark:text-gray-400 text-lg">Your cart is empty.</div>
+              ) : (
+                cart.map(item => {
+                  const itemInfo = Object.values(items).flat().find(i => i.name === item) || {};
+                  return (
+                    <div key={item} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md animate-slide-in">
+                      <h3 className="text-xl font-bold text-green-600 dark:text-green-400">{item}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">🛒 Category: {itemInfo.category}</p>
+                      <p className="text-gray-600 dark:text-gray-400">💰 Price: {itemInfo.priceDisplay}</p>
+                      <p className="text-gray-600 dark:text-gray-400">📦 Stock: {itemInfo.stock}</p>
+                      <p className="text-gray-600 dark:text-gray-400">🏷️ Tags: {itemInfo.tags?.join(', ')}</p>
+                      <div className="flex items-center gap-3 mt-3">
+                        <button className="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded" onClick={() => updateQuantity(item, -1)} aria-label={`Decrease quantity of ${item}`}>-</button>
+                        <span>{quantities[item] || 1}</span>
+                        <button className="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded" onClick={() => updateQuantity(item, 1)} aria-label={`Increase quantity of ${item}`}>+</button>
+                      </div>
+                      <button className="mt-4 w-full py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600" onClick={() => removeFromCart(item)} aria-label={`Remove ${item} from cart`}>Remove</button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="flex-1 sticky top-8 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
+              <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4">Order Summary</h3>
+              <p className="text-gray-600 dark:text-gray-400">Items: {cart.length}</p>
+              <p className="text-gray-600 dark:text-gray-400">Total: ₹{total}</p>
+              <button
+                className={`mt-5 w-full py-2 rounded-lg font-bold text-white ${cart.length === 0 ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                onClick={() => cart.length > 0 && setPage('payment')}
+                disabled={cart.length === 0}
+                aria-label="Proceed to payment"
+              >
+                Proceed to Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Payment Component
+    const Payment = ({ setPage }) => {
+      const [selectedMethod, setSelectedMethod] = useState(null);
+      const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '' });
+      const [upiId, setUpiId] = useState('');
+
+      const handlePayment = () => {
+        if (selectedMethod === 'Credit/Debit Card' && (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv)) {
+          alert('Please fill in all card details.');
+          return;
+        }
+        if (selectedMethod === 'UPI' && !upiId) {
+          alert('Please enter a valid UPI ID.');
+          return;
+        }
+        if (selectedMethod) {
+          alert(`Payment successful with ${selectedMethod}!`);
+          localStorage.setItem('cart', JSON.stringify([]));
+          setPage('home');
+        } else {
+          alert('Please select a payment method.');
+        }
+      };
+
+      return (
+        <div>
+          <div className="bg-white dark:bg-gray-800 shadow-md p-6 text-center">
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">Select Payment Method</h2>
+          </div>
+          <div className="container mx-auto p-8 flex flex-col items-center gap-6">
+            {['Credit/Debit Card', 'Cash on Delivery', 'UPI'].map(method => (
+              <div key={method} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md w-full max-w-md text-center animate-slide-in">
+                <h3 className="text-xl font-bold text-green-600 dark:text-green-400">{method}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{method === 'Credit/Debit Card' ? '💳 Pay securely with your card' : method === 'Cash on Delivery' ? '💵 Pay when you receive your order' : '📱 Pay instantly via UPI apps'}</p>
+                {method === 'Credit/Debit Card' && selectedMethod === method && (
+                  <div className="mt-4 flex flex-col gap-3">
+                    <input
+                      type="text"
+                      placeholder="Card Number"
+                      value={cardDetails.number}
+                      onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value })}
+                      className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                      aria-label="Card number"
+                    />
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      value={cardDetails.expiry}
+                      onChange={(e) => setCardDetails({ ...cardDetails, expiry: e.target.value })}
+                      className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                      aria-label="Card expiry date"
+                    />
+                    <input
+                      type="text"
+                      placeholder="CVV"
+                      value={cardDetails.cvv}
+                      onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
+                      className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                      aria-label="Card CVV"
+                    />
+                  </div>
+                )}
+                {method === 'UPI' && selectedMethod === method && (
+                  <div className="mt-4">
+                    <input
+                      type="text"
+                      placeholder="UPI ID"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200 w-full"
+                      aria-label="UPI ID"
+                    />
+                  </div>
+                )}
+                <button
+                  className={`mt-4 w-full py-2 rounded-lg font-bold text-white ${selectedMethod === method ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'}`}
+                  onClick={() => setSelectedMethod(method)}
+                  aria-label={`Select ${method} as payment method`}
+                >
+                  {selectedMethod === method ? 'Selected' : 'Select'}
+                </button>
+              </div>
+            ))}
+            <button className="w-full max-w-md py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700" onClick={handlePayment} aria-label="Confirm payment">Confirm Payment</button>
+          </div>
+        </div>
+      );
+    };
+
+    // Footer Component
+    const Footer = () => (
+      <footer className="bg-gray-100 dark:bg-gray-800 text-center p-4 text-gray-600 dark:text-gray-400">
+        <div className="container mx-auto">
+          <p>© 2025 Grozip | <a href="#" className="text-green-600 dark:text-green-400 hover:underline" aria-label="Terms and Conditions">Terms & Conditions</a> | <a href="#" className="text-green-600 dark:text-green-400 hover:underline" aria-label="Privacy Policy">Privacy Policy</a></p>
+          <p className="mt-2">Follow us: <a href="#" className="text-green-600 dark:text-green-400 hover:underline" aria-label="Follow on Twitter">Twitter</a> | <a href="#" className="text-green-600 dark:text-green-400 hover:underline" aria-label="Follow on Instagram">Instagram</a></p>
+        </div>
+      </footer>
+    );
+
+    // Main App Component
+    const App = () => {
+      const [page, setPage] = useState('home');
+      const [selectedStore, setSelectedStore] = useState(null);
+      const [isDark, setIsDark] = useState(false);
+      const [user, setUser] = useState(null);
+      const [search, setSearch] = useState('');
+
+      const toggleTheme = () => {
+        setIsDark(!isDark);
+        document.body.classList.toggle('dark');
+      };
+
+      const login = (userData) => {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      };
+
+      const logout = () => {
+        setUser(null);
+        localStorage.removeItem('user');
+      };
+
+      const handleSetPage = (newPage, newSearch = search) => {
+        setPage(newPage);
+        setSearch(newSearch);
+      };
+
+      useEffect(() => {
+        try {
+          const savedUser = localStorage.getItem('user');
+          if (savedUser) setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem('user');
+        }
+      }, []);
+
+      return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+          <div className={`min-h-screen flex flex-col ${isDark ? 'dark' : ''}`}>
+            <Header setPage={handleSetPage} toggleTheme={toggleTheme} isDark={isDark} />
+            {page === 'home' && <Home setPage={handleSetPage} />}
+            {page === 'store_list' && <StoreList setPage={handleSetPage} setSelectedStore={setSelectedStore} search={search} />}
+            {page === 'groceries' && <Groceries setPage={handleSetPage} selectedStore={selectedStore} />}
+            {page === 'cart' && <Cart setPage={handleSetPage} />}
+            {page === 'payment' && <Payment setPage={handleSetPage} />}
+            {page === 'login' && <Login setPage={handleSetPage} login={login} />}
+            {page === 'signup' && <Signup setPage={handleSetPage} login={login} />}
+            <Footer />
+          </div>
+        </AuthContext.Provider>
+      );
+    };
+
+    // Render the app
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
