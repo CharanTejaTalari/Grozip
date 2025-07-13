@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Store List - Grozip</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 15px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 16px;
+      color: #2e8b57;
+      font-weight: bold;
+    }
+
+    .cart {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      background-color: transparent;
+      color: #2e8b57;
+      font-size: иностранного16px;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      font-weight: bold;
+    }
+
+    .dropbtn:hover {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 5px;
+    }
+
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f9f9f9;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .search-again-container {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 20px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-top: 10px;
+    }
+
+    .search-again-container h3 {
+      margin-bottom: 12px;
+      color: #333;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .search-again-container form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-again-container input[type="text"] {
+      padding: 10px;
+      width: 300px;
+      max-width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .search-again-container input[type="submit"] {
+      padding: 10px 20px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .search-again-container input[type="submit"]:hover {
+      background-color: #246b45;
+    }
+
+    .main-container {
+      display: flex;
+      padding: 30px;
+      gap: 20px;
+    }
+
+    .store-list {
+      flex: 3;
+      padding: 0;
+    }
+
+    .store-tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px 30px;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+
+    .store-tile h3 {
+      color: #2e8b57;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .store-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      font-size: 15px;
+      color: #555;
+    }
+
+    .store-details p {
+      margin: 5px 0;
+    }
+
+    .shop-now-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .shop-now-btn:hover {
+      background-color: #246b45;
+    }
+
+    .map-container {
+      flex: 1;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .map-placeholder {
+      text-align: center;
+      color: #333;
+      font-size: 18px;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    footer a {
+      color: #2e8b57;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-wrapper">
+      <div class="left-section">
+        <div class="logo" onclick="location.href='Home_Page.html'">Grozip</div>
+        <nav class="nav-menu">
+          <div class="dropdown">
+            <button class="dropbtn">Categories</button>
+            <div class="dropdown-content">
+              <a href="#">Vegetables</a>
+              <a href="#">Fruits</a>
+              <a href="#">Snacks</a>
+              <a href="#">Dairy</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button class="dropbtn">Offers</button>
+            <div class="dropdown-content">
+              <a href="#">Today’s Deals</a>
+              <a href="#">Weekend Sale</a>
+              <a href="#">Combo Packs</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="right-section">
+        <span class="phone">📞 1800-123-456</span>
+        <span class="cart">🛒</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search Again Tile -->
+  <div class="search-again-container">
+    <form action="store_list.html" method="get">
+      <input type="text" name="shop" placeholder="Enter shop or supermarket name" required />
+      <input type="submit" value="Search" />
+    </form>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Store List Section -->
+    <div class="store-list">
+      <div class="store-tile">
+        <h3>Fresh Mart</h3>
+        <div class="store-details">
+          <p>📍 Address: 123 Main Street, Hyderabad</p>
+          <p>📞 Contact: 9876543210</p>
+          <p>⏰ Open Hours: 9 AM - 9 PM</p>
+          <p>🛒 Category: Supermarket</p>
+          <p>⭐ Rating: 4.5/5</p>
+          <p>💳 Payment: Cash, Card, UPI</p>
+          <p>🚚 Delivery: Yes (within 5 km)</p>
+          <p>📅 Established: 2012</p>
+          <p>👥 Staff: 25 employees</p>
+          <p>🏷️ Tags: Organic, Discounted Items, Loyalty Program</p>
+        </div>
+        <a href="groceries.html?store=Fresh Mart" class="shop-now-btn">Shop Now</a>
+      </div>
+
+      <div class="store-tile">
+        <h3>Daily Needs</h3>
+        <div class="store-details">
+          <p>📍 Address: 456 Subhash Nagar, Vizag</p>
+          <p>📞 Contact: 9001234567</p>
+          <p>⏰ Open Hours: 8 AM - 10 PM</p>
+          <p>🛒 Category: Grocery Store</p>
+          <p>⭐ Rating: 4.3/5</p>
+          <p>💳 Payment: Card, UPI</p>
+          <p>🚚 Delivery: No</p>
+          <p>📅 Established: 2015</p>
+          <p>👥 Staff: 18 employees</p>
+          <p>🏷️ Tags: Daily Essentials, Cold Storage</p>
+        </div>
+        <a href="groceries.html?store=Daily Needs" class="shop-now-btn">Shop Now</a>
+      </div>
+
+      <div class="store-tile">
+        <h3>Super Bazaar</h3>
+        <div class="store-details">
+          <p>📍 Address: 789 Market Road, Vijayawada</p>
+          <p>📞 Contact: 8899776655</p>
+          <p>⏰ Open Hours: 10 AM - 8 PM</p>
+          <p>🛒 Category: Hypermarket</p>
+          <p>⭐ Rating: 4.7/5</p>
+          <p>💳 Payment: All modes</p>
+          <p>🚚 Delivery: Yes (within 10 km)</p>
+          <p>📅 Established: 2010</p>
+          <p>👥 Staff: 40 employees</p>
+          <p>🏷️ Tags: Groceries, Electronics, Household Items</p>
+        </div>
+        <a href="groceries.html?store=Super Bazaar" class="shop-now-btn">Shop Now</a>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-container">
+      <div class="map-placeholder">Map Placeholder (Replace with actual map)</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Grozip | <a href="#">Terms & Conditions</a></p>
+  </footer>
+
+</body>
+</html>

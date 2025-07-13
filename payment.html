@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment - Grozip</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 15px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 16px;
+      color: #2e8b57;
+      font-weight: bold;
+    }
+
+    .cart {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      background-color: transparent;
+      color: #2e8b57;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      font-weight: bold;
+    }
+
+    .dropbtn:hover {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 5px;
+    }
+
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f9f9f9;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .payment-header {
+      padding: 20px 30px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .payment-header h2 {
+      color: #2e8b57;
+      font-size: 24px;
+    }
+
+    .payment-list {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .payment-option {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .payment-option h3 {
+      color: #2e8b57;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .payment-option p {
+      font-size: 15px;
+      color: #555;
+      margin: 5px 0;
+    }
+
+    .select-payment-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .select-payment-btn:hover {
+      background-color: #246b45;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    footer a {
+      color: #2e8b57;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-wrapper">
+      <div class="left-section">
+        <div class="logo" onclick="location.href='Home_Page.html'">Grozip</div>
+        <nav class="nav-menu">
+          <div class="dropdown">
+            <button class="dropbtn">Categories</button>
+            <div class="dropdown-content">
+              <a href="#">Vegetables</a>
+              <a href="#">Fruits</a>
+              <a href="#">Snacks</a>
+              <a href="#">Dairy</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button class="dropbtn">Offers</button>
+            <div class="dropdown-content">
+              <a href="#">Today’s Deals</a>
+              <a href="#">Weekend Sale</a>
+              <a href="#">Combo Packs</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="right-section">
+        <span class="phone">📞 1800-123-456</span>
+        <span class="cart" onclick="location.href='cart.html'">🛒</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Payment Header -->
+  <div class="payment-header">
+    <h2>Select Payment Method</h2>
+  </div>
+
+  <!-- Payment List Section -->
+  <div class="payment-list">
+    <div class="payment-option">
+      <h3>Credit/Debit Card</h3>
+      <p>💳 Pay securely with your card</p>
+      <button class="select-payment-btn" onclick="alert('Proceeding with Card payment...')">Select</button>
+    </div>
+    <div class="payment-option">
+      <h3>Cash on Delivery</h3>
+      <p>💵 Pay when you receive your order</p>
+      <button class="select-payment-btn" onclick="alert('Proceeding with Cash on Delivery...')">Select</button>
+    </div>
+    <div class="payment-option">
+      <h3>UPI</h3>
+      <p>📱 Pay instantly via UPI apps</p>
+      <button class="select-payment-btn" onclick="alert('Proceeding with UPI payment...')">Select</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Grozip | <a href="#">Terms & Conditions</a></p>
+  </footer>
+
+</body>
+</html>

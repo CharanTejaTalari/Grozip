@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart - Grozip</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 15px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 16px;
+      color: #2e8b57;
+      font-weight: bold;
+    }
+
+    .cart {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      background-color: transparent;
+      color: #2e8b57;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      font-weight: bold;
+    }
+
+    .dropbtn:hover {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 5px;
+    }
+
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f9f9f9;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .cart-header {
+      padding: 20px 30px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .cart-header h2 {
+      color: #2e8b57;
+      font-size: 24px;
+    }
+
+    .cart-container {
+      display: flex;
+      padding: 30px;
+      gap: 20px;
+    }
+
+    .cart-list {
+      flex: 3;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .cart-item {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .cart-item h3 {
+      color: #2e8b57;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .cart-item p {
+      font-size: 15px;
+      color: #555;
+      margin: 5px 0;
+    }
+
+    .remove-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .remove-btn:hover {
+      background-color: #cc0000;
+    }
+
+    .amount-summary {
+      flex: 1;
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 30px;
+      height: fit-content;
+    }
+
+    .amount-summary h3 {
+      color: #2e8b57;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .amount-summary p {
+      font-size: 16px;
+      color: #555;
+      margin: 10px 0;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 30px;
+      font-size: 18px;
+      color: #555;
+      grid-column: 1 / -1;
+    }
+
+    .payment-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .payment-btn:hover {
+      background-color: #246b45;
+    }
+
+    .payment-btn:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    footer a {
+      color: #2e8b57;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-wrapper">
+      <div class="left-section">
+        <div class="logo" onclick="location.href='Home_Page.html'">Grozip</div>
+        <nav class="nav-menu">
+          <div class="dropdown">
+            <button class="dropbtn">Categories</button>
+            <div class="dropdown-content">
+              <a href="#">Vegetables</a>
+              <a href="#">Fruits</a>
+              <a href="#">Snacks</a>
+              <a href="#">Dairy</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button class="dropbtn">Offers</button>
+            <div class="dropdown-content">
+              <a href="#">Today’s Deals</a>
+              <a href="#">Weekend Sale</a>
+              <a href="#">Combo Packs</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="right-section">
+        <span class="phone">📞 1800-123-456</span>
+        <span class="cart" onclick="location.href='cart.html'">🛒</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cart Header -->
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+  </div>
+
+  <!-- Cart Container -->
+  <div class="cart-container">
+    <!-- Cart List Section -->
+    <div class="cart-list" id="cart-list">
+      <!-- Cart items will be dynamically added here -->
+    </div>
+
+    <!-- Amount Summary -->
+    <div class="amount-summary">
+      <h3>Order Summary</h3>
+      <p id="item-count">Items: 0</p>
+      <p id="total-amount">Total: ₹0</p>
+      <a href="payment.html" class="payment-btn" id="payment-btn" disabled>Proceed to Payment</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Grozip | <a href="#">Terms & Conditions</a></p>
+  </footer>
+
+  <script>
+    // Sample item data with numeric prices for calculation
+    const itemData = {
+      'Fresh Apples': { category: 'Fruits', price: 150, priceDisplay: '₹150/kg', stock: '50 kg', tags: 'Organic, Fresh' },
+      'Whole Wheat Bread': { category: 'Bakery', price: 40, priceDisplay: '₹40/loaf', stock: '100 loaves', tags: 'Healthy, Fresh' },
+      'Milk': { category: 'Dairy', price: 60, priceDisplay: '₹60/liter', stock: '200 liters', tags: 'Full Cream, Pasteurized' },
+      'Potatoes': { category: 'Vegetables', price: 30, priceDisplay: '₹30/kg', stock: '300 kg', tags: 'Fresh, Local' },
+      'Chips': { category: 'Snacks', price: 20, priceDisplay: '₹20/pack', stock: '500 packs', tags: 'Spicy, Crunchy' }
+    };
+
+    // Load cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Display cart items and update summary
+    const cartList = document.getElementById('cart-list');
+    const itemCount = document.getElementById('item-count');
+    const totalAmount = document.getElementById('total-amount');
+    const paymentBtn = document.getElementById('payment-btn');
+
+    function updateCartDisplay() {
+      cartList.innerHTML = '';
+      if (cart.length === 0) {
+        cartList.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
+        itemCount.textContent = 'Items: 0';
+        totalAmount.textContent = 'Total: ₹0';
+        paymentBtn.setAttribute('disabled', 'true');
+      } else {
+        let total = 0;
+        cart.forEach(item => {
+          const itemInfo = itemData[item] || { category: 'Unknown', priceDisplay: 'N/A', stock: 'N/A', tags: 'N/A', price: 0 };
+          total += itemInfo.price;
+          const cartItem = document.createElement('div');
+          cartItem.className = 'cart-item';
+          cartItem.innerHTML = `
+            <h3>${item}</h3>
+            <p>🛒 Category: ${itemInfo.category}</p>
+            <p>💰 Price: ${itemInfo.priceDisplay}</p>
+            <p>📦 Stock: ${itemInfo.stock}</p>
+            <p>🏷️ Tags: ${itemInfo.tags}</p>
+            <button class="remove-btn" onclick="removeFromCart('${item}', this)">Remove</button>
+          `;
+          cartList.appendChild(cartItem);
+        });
+        itemCount.textContent = `Items: ${cart.length}`;
+        totalAmount.textContent = `Total: ₹${total}`;
+        paymentBtn.removeAttribute('disabled');
+      }
+    }
+
+    // Remove from cart function
+    function removeFromCart(itemName, button) {
+      cart = cart.filter(item => item !== itemName);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartDisplay();
+    }
+
+    // Initial display
+    updateCartDisplay();
+  </script>
+
+</body>
+</html>

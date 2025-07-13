@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Groceries - Grozip</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 15px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 16px;
+      color: #2e8b57;
+      font-weight: bold;
+    }
+
+    .cart {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      background-color: transparent;
+      color: #2e8b57;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      font-weight: bold;
+    }
+
+    .dropbtn:hover {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 5px;
+    }
+
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f9f9f9;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .store-header {
+      padding: 20px 30px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .store-header h2 {
+      color: #2e8b57;
+      font-size: 24px;
+    }
+
+    .grocery-list {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .grocery-tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .grocery-tile h3 {
+      color: #2e8b57;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .grocery-tile p {
+      font-size: 15px;
+      color: #555;
+      margin: 5px 0;
+    }
+
+    .add-to-cart-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .add-to-cart-btn.added {
+      background-color: #888;
+      color: #fff;
+    }
+
+    .add-to-cart-btn:hover:not(.added) {
+      background-color: #246b45;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    footer a {
+      color: #2e8b57;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-wrapper">
+      <div class="left-section">
+        <div class="logo" onclick="location.href='Home_Page.html'">Grozip</div>
+        <nav class="nav-menu">
+          <div class="dropdown">
+            <button class="dropbtn">Categories</button>
+            <div class="dropdown-content">
+              <a href="#">Vegetables</a>
+              <a href="#">Fruits</a>
+              <a href="#">Snacks</a>
+              <a href="#">Dairy</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button class="dropbtn">Offers</button>
+            <div class="dropdown-content">
+              <a href="#">Today’s Deals</a>
+              <a href="#">Weekend Sale</a>
+              <a href="#">Combo Packs</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="right-section">
+        <span class="phone">📞 1800-123-456</span>
+        <span class="cart" onclick="location.href='cart.html'">🛒</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Store Header -->
+  <div class="store-header">
+    <h2 id="store-name">Groceries</h2>
+  </div>
+
+  <!-- Grocery List Section -->
+  <div class="grocery-list">
+    <div class="grocery-tile" data-item="Fresh Apples">
+      <h3>Fresh Apples</h3>
+      <p>🛒 Category: Fruits</p>
+      <p>💰 Price: ₹150/kg</p>
+      <p>📦 Stock: 50 kg</p>
+      <p>🏷️ Tags: Organic, Fresh</p>
+      <button class="add-to-cart-btn" onclick="addToCart('Fresh Apples', this)">Add to Cart</button>
+    </div>
+    <div class="grocery-tile" data-item="Whole Wheat Bread">
+      <h3>Whole Wheat Bread</h3>
+      <p>🛒 Category: Bakery</p>
+      <p>💰 Price: ₹40/loaf</p>
+      <p>📦 Stock: 100 loaves</p>
+      <p>🏷️ Tags: Healthy, Fresh</p>
+      <button class="add-to-cart-btn" onclick="addToCart('Whole Wheat Bread', this)">Add to Cart</button>
+    </div>
+    <div class="grocery-tile" data-item="Milk">
+      <h3>Milk</h3>
+      <p>🛒 Category: Dairy</p>
+      <p>💰 Price: ₹60/liter</p>
+      <p>📦 Stock: 200 liters</p>
+      <p>🏷️ Tags: Full Cream, Pasteurized</p>
+      <button class="add-to-cart-btn" onclick="addToCart('Milk', this)">Add to Cart</button>
+    </div>
+    <div class="grocery-tile" data-item="Potatoes">
+      <h3> . Potatoes</h3>
+      <p>🛒 Category: Vegetables</p>
+      <p>💰 Price: ₹30/kg</p>
+      <p>📦 Stock: 300 kg</p>
+      <p>🏷️ Tags: Fresh, Local</p>
+      <button class="add-to-cart-btn" onclick="addToCart('Potatoes', this)">Add to Cart</button>
+    </div>
+    <div class="grocery-tile" data-item="Chips">
+      <h3>Chips</h3>
+      <p>🛒 Category: Snacks</p>
+      <p>💰 Price: ₹20/pack</p>
+      <p>📦 Stock: 500 packs</p>
+      <p>🏷️ Tags: Spicy, Crunchy</p>
+      <button class="add-to-cart-btn" onclick="addToCart('Chips', this)">Add to Cart</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Grozip | <a href="#">Terms & Conditions</a></p>
+  </footer>
+
+  <script>
+    // Get store name from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeName = urlParams.get('store') || 'Groceries';
+    document.getElementById('store-name').textContent = `${storeName} - Groceries`;
+
+    // Initialize cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Check cart state on page load
+    document.querySelectorAll('.grocery-tile').forEach(tile => {
+      const itemName = tile.getAttribute('data-item');
+      if (cart.includes(itemName)) {
+        const btn = tile.querySelector('.add-to-cart-btn');
+        btn.textContent = 'Added';
+        btn.classList.add('added');
+      }
+    });
+
+    // Add to cart function
+    function addToCart(itemName, button) {
+      if (!cart.includes(itemName)) {
+        cart.push(itemName);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        button.textContent = 'Added';
+        button.classList.add('added');
+      }
+    }
+  </script>
+
+</body>
+</html>
